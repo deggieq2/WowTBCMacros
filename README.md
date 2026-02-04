@@ -15,6 +15,14 @@ npm install
 npm run dev
 ```
 
+## GitHub Pages Hosting (Frontend Only)
+
+This repo includes a GitHub Actions workflow that builds the frontend and deploys
+`apps/web/dist` to GitHub Pages on every push to `main`.
+
+If you fork or rename the repo, update `BASE_PATH` in `.github/workflows/pages.yml`
+to match the repo name (e.g., `/YourRepoName/`).
+
 Optional API base (community features):
 
 ```bash
