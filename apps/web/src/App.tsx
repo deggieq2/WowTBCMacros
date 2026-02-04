@@ -171,6 +171,9 @@ export default function App() {
   const [guidedStopcasting, setGuidedStopcasting] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(null);
   const [view, setView] = useState<'builder' | 'curated' | 'community'>('builder');
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    (localStorage.getItem('tbc-theme') as 'light' | 'dark') || 'light'
+  );
   const [communityQuery, setCommunityQuery] = useState('');
   const [communityClass, setCommunityClass] = useState('');
   const [communityMacros, setCommunityMacros] = useState<CuratedMacro[]>([]);
@@ -188,6 +191,11 @@ export default function App() {
   useEffect(() => {
     loadWowheadTooltips();
   }, []);
+
+  useEffect(() => {
+    document.body.dataset.theme = theme;
+    localStorage.setItem('tbc-theme', theme);
+  }, [theme]);
 
   const spellList = useMemo(() => {
     const lower = search.toLowerCase();
@@ -522,6 +530,13 @@ export default function App() {
               onChange={(event) => setShowExplain(event.target.checked)}
             />
             Explain macro
+          </label>
+          <label>
+            <select value={theme} onChange={(event) => setTheme(event.target.value as 'light' | 'dark')}>
+              <option value="light">Light (Parchment)</option>
+              <option value="dark">Dark (Fel)</option>
+            </select>
+            <span className="muted"> Theme</span>
           </label>
           {view === 'builder' && (
             <label>

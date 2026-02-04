@@ -1,10 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
 
 :root {
-  color-scheme: light;
   font-family: 'Space Grotesk', sans-serif;
-  background: #f4f1ea;
-  color: #1e1b16;
   --ink: #1e1b16;
   --muted: #6b6257;
   --accent: #c0622a;
@@ -12,6 +9,9 @@
   --card: #ffffffcc;
   --border: #d6cbbd;
   --shadow: 0 20px 40px rgba(30, 27, 22, 0.08);
+  --bg: #f4f1ea;
+  --bg-2: #efe7d9;
+  --panel: #fff9f2;
 }
 
 * {
@@ -20,7 +20,45 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top left, #fff4df, #f4f1ea 35%, #efe7d9 100%);
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(255, 244, 223, 0.95), rgba(244, 241, 234, 0.95) 35%, rgba(239, 231, 217, 0.95) 100%),
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.03) 6px, rgba(0, 0, 0, 0.015) 6px, rgba(0, 0, 0, 0.015) 12px);
+  background-color: var(--bg);
+}
+
+body[data-theme='light'] {
+  color-scheme: light;
+  --ink: #1e1b16;
+  --muted: #6b6257;
+  --accent: #c0622a;
+  --accent-2: #2f6c75;
+  --card: #ffffffcc;
+  --border: #d6cbbd;
+  --shadow: 0 20px 40px rgba(30, 27, 22, 0.08);
+  --bg: #f4f1ea;
+  --bg-2: #efe7d9;
+  --panel: #fff9f2;
+}
+
+body[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e6f7e6;
+  --muted: #9fb7a1;
+  --accent: #41c47f;
+  --accent-2: #83f0b4;
+  --card: rgba(14, 17, 15, 0.9);
+  --border: rgba(88, 130, 102, 0.6);
+  --shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  --bg: #0b0d0b;
+  --bg-2: #0f1612;
+  --panel: #0f1713;
+}
+
+body[data-theme='dark'] {
+  background:
+    radial-gradient(circle at top left, rgba(12, 20, 14, 0.95), rgba(8, 10, 8, 0.95) 35%, rgba(4, 6, 4, 0.95) 100%),
+    repeating-linear-gradient(135deg, rgba(65, 196, 127, 0.04), rgba(65, 196, 127, 0.04) 6px, rgba(0, 0, 0, 0.1) 6px, rgba(0, 0, 0, 0.1) 12px);
 }
 
 .app {
@@ -111,7 +149,7 @@ textarea {
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--panel);
   color: var(--ink);
 }
 
@@ -120,6 +158,7 @@ textarea {
   resize: vertical;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+  background: var(--panel);
 }
 
 button {
@@ -176,7 +215,7 @@ button.ghost {
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--panel);
   text-align: left;
   color: var(--ink);
 }
@@ -202,7 +241,7 @@ button.ghost {
   border: 1px solid transparent;
   border-radius: 14px;
   padding: 10px;
-  background: #fff9f2;
+  background: var(--panel);
 }
 
 .line.active {
@@ -246,9 +285,9 @@ button.ghost {
 }
 
 .errors {
-  background: #ffe3d4;
-  border: 1px solid #f2b59b;
-  color: #8b3d18;
+  background: rgba(255, 130, 88, 0.2);
+  border: 1px solid rgba(255, 130, 88, 0.4);
+  color: var(--ink);
   padding: 10px;
   border-radius: 12px;
   margin-bottom: 10px;
@@ -257,7 +296,7 @@ button.ghost {
 
 .explain {
   margin-top: 16px;
-  background: #f3efe5;
+  background: var(--panel);
   border-radius: 12px;
   padding: 12px;
   font-size: 13px;
