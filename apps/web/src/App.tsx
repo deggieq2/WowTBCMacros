@@ -466,7 +466,12 @@ export default function App() {
                       onClick={() => handleSpellSelect(spell)}
                     >
                       <span className="spell-name">
-                        <a href={spell.wowheadUrl} data-wowhead="spell" target="_blank" rel="noreferrer">
+                        <a
+                          href={spell.wowheadUrl}
+                          data-wowhead={`spell=${spell.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           {spell.name}
                         </a>
                       </span>
@@ -482,7 +487,12 @@ export default function App() {
                       onClick={() => handleConsumableSelect(item)}
                     >
                       <span className="spell-name">
-                        <a href={item.wowheadUrl} data-wowhead="item" target="_blank" rel="noreferrer">
+                        <a
+                          href={item.wowheadUrl}
+                          data-wowhead={`item=${item.itemId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           {item.name}
                         </a>
                       </span>
