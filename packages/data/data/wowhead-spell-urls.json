@@ -1,0 +1,38 @@
+[
+  {
+    "class": "Warrior",
+    "url": "https://www.wowhead.com/tbc/spells/class/1"
+  },
+  {
+    "class": "Paladin",
+    "url": "https://www.wowhead.com/tbc/spells/class/2"
+  },
+  {
+    "class": "Hunter",
+    "url": "https://www.wowhead.com/tbc/spells/class/3"
+  },
+  {
+    "class": "Rogue",
+    "url": "https://www.wowhead.com/tbc/spells/class/4"
+  },
+  {
+    "class": "Priest",
+    "url": "https://www.wowhead.com/tbc/spells/class/5"
+  },
+  {
+    "class": "Shaman",
+    "url": "https://www.wowhead.com/tbc/spells/class/7"
+  },
+  {
+    "class": "Mage",
+    "url": "https://www.wowhead.com/tbc/spells/class/8"
+  },
+  {
+    "class": "Warlock",
+    "url": "https://www.wowhead.com/tbc/spells/class/9"
+  },
+  {
+    "class": "Druid",
+    "url": "https://www.wowhead.com/tbc/spells/class/11"
+  }
+]

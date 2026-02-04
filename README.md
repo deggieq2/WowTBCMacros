@@ -38,7 +38,18 @@ npm run data:build
 npm run data:lua
 ```
 
-The fetcher from Wowhead is intentionally not implemented until terms are confirmed.
+### Wowhead spell fetcher
+
+You can attempt to pull full class spell lists from Wowhead listview pages:
+
+```bash
+npm run data:wowhead
+```
+
+The script reads `packages/data/data/wowhead-spell-urls.json` and writes
+`packages/data/data/spells.json`. If Wowhead blocks automated requests, you may
+need to run this locally or adjust the URLs. The format expects Wowhead listview
+pages with `new Listview({ template: 'spell', data: [...] })`.
 
 Consumables are sourced from `packages/data/data/consumables.source.json` and compiled into
 `packages/data/data/consumables.json` with Wowhead item IDs so tooltips resolve.

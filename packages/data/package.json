@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/build-spells.js && node scripts/build-consumables.js",
     "consumables": "node scripts/build-consumables.js",
+    "wowhead": "node scripts/fetch-wowhead-spells.js",
     "lua": "node scripts/build-lua.js"
   }
 }

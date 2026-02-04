@@ -8,6 +8,7 @@
     "preview": "npm --workspace apps/web run preview",
     "data:build": "node packages/data/scripts/build-spells.js && node packages/data/scripts/build-consumables.js",
     "data:consumables": "node packages/data/scripts/build-consumables.js",
+    "data:wowhead": "node packages/data/scripts/fetch-wowhead-spells.js",
     "data:lua": "node packages/data/scripts/build-lua.js"
   }
 }

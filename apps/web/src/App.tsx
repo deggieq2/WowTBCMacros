@@ -73,6 +73,67 @@ const COMMANDS = [
 
 const INITIAL_LINE: MacroLine = { command: 'cast', argument: '', condition: {} };
 
+const HELP_KEYWORDS = [
+  'heal',
+  'renew',
+  'rejuvenation',
+  'regrowth',
+  'flash',
+  'prayer',
+  'mend',
+  'blessing',
+  'shield',
+  'lifebloom',
+  'innervate',
+  'cleanse',
+  'dispel',
+  'cure',
+  'remove',
+  'abolish',
+  'holy light',
+  'flash heal',
+  'healing touch',
+  'nature\'s swiftness',
+  'swiftmend',
+  'lay on hands'
+];
+
+const HARM_KEYWORDS = [
+  'bolt',
+  'shot',
+  'strike',
+  'blast',
+  'smite',
+  'shadow',
+  'fire',
+  'frost',
+  'arcane',
+  'wrath',
+  'starfire',
+  'moonfire',
+  'corruption',
+  'curse',
+  'shock',
+  'rend',
+  'cleave',
+  'slam',
+  'mangle',
+  'swipe',
+  'sinister',
+  'backstab',
+  'ambush',
+  'eviscerate',
+  'poison',
+  'serpent sting'
+];
+
+function inferSpellRole(name: string): 'help' | 'harm' | null {
+  const lower = name.toLowerCase();
+  if (HELP_KEYWORDS.some((key) => lower.includes(key))) return 'help';
+  if (HARM_KEYWORDS.some((key) => lower.includes(key))) return 'harm';
+  return null;
+}
+
 function loadWowheadTooltips() {
   if (document.getElementById('wowhead-tooltip')) return;
   const script = document.createElement('script');
@@ -100,6 +161,15 @@ export default function App() {
   const [libraryMode, setLibraryMode] = useState<'spells' | 'consumables'>('spells');
   const [consumableType, setConsumableType] = useState('');
   const [druidHelper, setDruidHelper] = useState<'native' | 'dmh'>('native');
+  const [experienceMode, setExperienceMode] = useState<'guided' | 'expert'>('expert');
+  const [guidedType, setGuidedType] = useState<'help' | 'harm' | 'help-harm'>('help-harm');
+  const [guidedHelpSpell, setGuidedHelpSpell] = useState('');
+  const [guidedHarmSpell, setGuidedHarmSpell] = useState('');
+  const [guidedMouseover, setGuidedMouseover] = useState(true);
+  const [guidedTargetFallback, setGuidedTargetFallback] = useState(true);
+  const [guidedSelfFallback, setGuidedSelfFallback] = useState(true);
+  const [guidedStopcasting, setGuidedStopcasting] = useState(false);
+  const [selectedSpell, setSelectedSpell] = useState<Spell | null>(null);
   const [view, setView] = useState<'builder' | 'curated' | 'community'>('builder');
   const [communityQuery, setCommunityQuery] = useState('');
   const [communityClass, setCommunityClass] = useState('');
@@ -331,6 +401,7 @@ export default function App() {
   }
 
   function handleSpellSelect(spell: Spell) {
+    setSelectedSpell(spell);
     const nextShow = showTooltip || spell.name;
     setShowTooltip(nextShow);
     updateLine(activeLineIndex, { argument: spell.name });
@@ -346,12 +417,74 @@ export default function App() {
     void navigator.clipboard.writeText(finalMacro);
   }
 
+  function getGuidedMacro() {
+    const helpSpell = guidedHelpSpell || 'Your Heal';
+    const harmSpell = guidedHarmSpell || 'Your Damage';
+    const parts: string[] = [];
+
+    if (guidedType === 'help' || guidedType === 'help-harm') {
+      if (guidedMouseover) {
+        parts.push(`[target=mouseover,help,nodead] ${helpSpell}`);
+      }
+      if (guidedType === 'help-harm' && guidedMouseover) {
+        parts.push(`[target=mouseover,harm,nodead] ${harmSpell}`);
+      }
+    }
+
+    if (guidedType === 'harm' || guidedType === 'help-harm') {
+      if (guidedType !== 'help-harm' && guidedMouseover) {
+        parts.push(`[target=mouseover,harm,nodead] ${harmSpell}`);
+      }
+      if (guidedTargetFallback) {
+        parts.push(`[harm,nodead] ${harmSpell}`);
+      }
+    }
+
+    if (guidedType === 'help' || guidedType === 'help-harm') {
+      if (guidedTargetFallback) {
+        parts.push(`[help,nodead] ${helpSpell}`);
+      }
+      if (guidedSelfFallback) {
+        parts.push(`[target=player] ${helpSpell}`);
+      }
+    }
+
+    return parts.join('; ');
+  }
+
+  function applyGuidedMacro() {
+    const argument = getGuidedMacro();
+    const nextLines: MacroLine[] = [];
+    if (guidedStopcasting) {
+      nextLines.push({ command: 'stopcasting', argument: '', condition: {} });
+    }
+    nextLines.push({ command: 'cast', argument, condition: {} });
+    setLines(nextLines);
+    setActiveLineIndex(guidedStopcasting ? 1 : 0);
+    if (guidedType === 'harm') {
+      setShowTooltip(guidedHarmSpell);
+    } else {
+      setShowTooltip(guidedHelpSpell);
+    }
+  }
+
+  function applySuggestedCondition() {
+    if (!selectedSpell) return;
+    const role = inferSpellRole(selectedSpell.name);
+    if (!role) return;
+    updateCondition(activeLineIndex, {
+      help: role === 'help',
+      harm: role === 'harm'
+    });
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <div>
           <h1>TBC Macro Builder</h1>
           <p>Build class, pet, and conditional macros with TBC-safe syntax.</p>
+          <p className="muted">Created by Deggie - Spineshatter</p>
         </div>
         <div className="toggles">
           <div className="nav">
@@ -390,6 +523,18 @@ export default function App() {
             />
             Explain macro
           </label>
+          {view === 'builder' && (
+            <label>
+              <select
+                value={experienceMode}
+                onChange={(event) => setExperienceMode(event.target.value as 'guided' | 'expert')}
+              >
+                <option value="guided">Guided (Noob)</option>
+                <option value="expert">Expert</option>
+              </select>
+              <span className="muted"> Macro mode</span>
+            </label>
+          )}
         </div>
       </header>
 
@@ -504,6 +649,19 @@ export default function App() {
                 <p className="muted">No consumables found.</p>
               )}
             </div>
+            {selectedSpell && experienceMode === 'expert' && (
+              <div className="hint">
+                <strong>Suggestion:</strong>{' '}
+                {inferSpellRole(selectedSpell.name) === 'help' && 'Helpful spell → use help targets.'}
+                {inferSpellRole(selectedSpell.name) === 'harm' && 'Harmful spell → use harm targets.'}
+                {!inferSpellRole(selectedSpell.name) && 'No suggestion for this spell.'}
+                {inferSpellRole(selectedSpell.name) && (
+                  <button className="ghost" onClick={applySuggestedCondition}>
+                    Apply
+                  </button>
+                )}
+              </div>
+            )}
           </section>
 
           <section className="panel">
@@ -659,6 +817,85 @@ export default function App() {
             </button>
           </section>
 
+          {experienceMode === 'guided' && (
+            <section className="panel">
+              <h2>Guided Builder</h2>
+              <p className="muted">
+                Choose a macro style and spells. We will generate a safe mouseover/target/self
+                fallback macro you can apply to the editor.
+              </p>
+              <div className="field">
+                <label>Macro type</label>
+                <select value={guidedType} onChange={(e) => setGuidedType(e.target.value as typeof guidedType)}>
+                  <option value="help">Mouseover Heal</option>
+                  <option value="harm">Mouseover Harm</option>
+                  <option value="help-harm">Help/Harm (mouseover + fallback)</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Help spell</label>
+                <select value={guidedHelpSpell} onChange={(e) => setGuidedHelpSpell(e.target.value)}>
+                  <option value="">(select)</option>
+                  {spellList.map((spell) => (
+                    <option key={spell.id} value={spell.name}>
+                      {spell.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Harm spell</label>
+                <select value={guidedHarmSpell} onChange={(e) => setGuidedHarmSpell(e.target.value)}>
+                  <option value="">(select)</option>
+                  {spellList.map((spell) => (
+                    <option key={spell.id} value={spell.name}>
+                      {spell.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="checkboxes">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={guidedMouseover}
+                    onChange={(e) => setGuidedMouseover(e.target.checked)}
+                  />
+                  Use mouseover first
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={guidedTargetFallback}
+                    onChange={(e) => setGuidedTargetFallback(e.target.checked)}
+                  />
+                  Fallback to target
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={guidedSelfFallback}
+                    onChange={(e) => setGuidedSelfFallback(e.target.checked)}
+                  />
+                  Fallback to self (heals)
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={guidedStopcasting}
+                    onChange={(e) => setGuidedStopcasting(e.target.checked)}
+                  />
+                  Add /stopcasting
+                </label>
+              </div>
+              <div className="field">
+                <label>Generated /cast line</label>
+                <textarea readOnly value={`/cast ${getGuidedMacro()}`} rows={4} />
+              </div>
+              <button onClick={applyGuidedMacro}>Apply to editor</button>
+            </section>
+          )}
+
           <section className="panel">
             <h2>Macro Output</h2>
             {errors.length > 0 && (
@@ -681,6 +918,21 @@ export default function App() {
                 </ul>
               </div>
             )}
+          </section>
+          <section className="panel">
+            <h2>Condition Cheatsheet</h2>
+            <ul className="cheatsheet">
+              <li><strong>help</strong>: Only friendly targets (heals/buffs).</li>
+              <li><strong>harm</strong>: Only hostile targets (damage/debuffs).</li>
+              <li><strong>target=mouseover</strong>: Use the unit your mouse is hovering.</li>
+              <li><strong>target=player</strong>: Force self-cast.</li>
+              <li><strong>nodead</strong>: Skip dead targets.</li>
+              <li><strong>exists</strong>: Only if the target exists.</li>
+              <li><strong>mod:shift/ctrl/alt</strong>: Change behavior with modifier keys.</li>
+            </ul>
+            <p className="muted">
+              Tip: A common heal macro pattern is mouseover → target → self. For harm spells, mouseover → target.
+            </p>
           </section>
         </main>
       )}
@@ -789,6 +1041,9 @@ export default function App() {
           </section>
         </main>
       )}
+      <footer className="footer">
+        Created by Deggie - Spineshatter
+      </footer>
     </div>
   );
 }
