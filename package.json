@@ -1,0 +1,13 @@
+{
+  "name": "wow-tbc-macros",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm --workspace apps/web run dev",
+    "build": "npm --workspace apps/web run build",
+    "preview": "npm --workspace apps/web run preview",
+    "data:build": "node packages/data/scripts/build-spells.js && node packages/data/scripts/build-consumables.js",
+    "data:consumables": "node packages/data/scripts/build-consumables.js",
+    "data:lua": "node packages/data/scripts/build-lua.js"
+  }
+}

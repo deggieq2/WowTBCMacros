@@ -1,0 +1,11 @@
+{
+  "name": "tbc-macro-data",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-spells.js && node scripts/build-consumables.js",
+    "consumables": "node scripts/build-consumables.js",
+    "lua": "node scripts/build-lua.js"
+  }
+}

@@ -1,0 +1,12 @@
+## Interface: 20504
+## Title: TBC Macro Builder
+## Notes: Build and manage TBC macros in-game.
+## Author: WowTBCMacros
+## Version: 0.1.0
+## SavedVariables: TBCMacroBuilderDB
+
+Core.lua
+Data.lua
+Templates.lua
+Serializer.lua
+UI.lua

@@ -1,0 +1,90 @@
+[
+  {
+    "id": 116,
+    "name": "Frostbolt",
+    "class": "Mage",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "spell_frost_frostbolt02",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=116"
+  },
+  {
+    "id": 1463,
+    "name": "Mana Shield",
+    "class": "Mage",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "spell_shadow_detectlesserinvisibility",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=1463"
+  },
+  {
+    "id": 3044,
+    "name": "Arcane Shot",
+    "class": "Hunter",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "ability_impalingbolt",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=3044"
+  },
+  {
+    "id": 172,
+    "name": "Corruption",
+    "class": "Warlock",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "spell_shadow_abominationexplosion",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=172"
+  },
+  {
+    "id": 75,
+    "name": "Auto Shot",
+    "class": "Hunter",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "ability_whirlwind",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=75"
+  },
+  {
+    "id": 687,
+    "name": "Demon Skin",
+    "class": "Warlock",
+    "isBase": true,
+    "isTalent": false,
+    "isPet": false,
+    "petType": null,
+    "icon": "spell_shadow_ragingscream",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=687"
+  },
+  {
+    "id": 23099,
+    "name": "Dash",
+    "class": "Hunter",
+    "isBase": false,
+    "isTalent": false,
+    "isPet": true,
+    "petType": "Cat",
+    "icon": "ability_druid_dash",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=23099"
+  },
+  {
+    "id": 19647,
+    "name": "Spell Lock",
+    "class": "Warlock",
+    "isBase": false,
+    "isTalent": false,
+    "isPet": true,
+    "petType": "Felhunter",
+    "icon": "spell_shadow_mindrot",
+    "wowheadUrl": "https://tbc.wowhead.com/spell=19647"
+  }
+]

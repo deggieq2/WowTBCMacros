@@ -1,0 +1,18 @@
+[
+  {
+    "id": "mage-counterspell-focus",
+    "title": "Mage Counterspell Focus",
+    "class": "Mage",
+    "tags": ["pvp", "interrupt"],
+    "macro": "#showtooltip Counterspell\n/cast [target=focus,exists,nodead] Counterspell; Counterspell",
+    "description": "Interrupt focus if available, otherwise your target."
+  },
+  {
+    "id": "hunter-startattack",
+    "title": "Hunter Auto Shot Starter",
+    "class": "Hunter",
+    "tags": ["pve", "ranged"],
+    "macro": "#showtooltip Steady Shot\n/startattack\n/cast Steady Shot",
+    "description": "Guarantees Auto Shot starts while using Steady Shot."
+  }
+]

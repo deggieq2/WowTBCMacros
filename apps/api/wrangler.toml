@@ -1,0 +1,11 @@
+name = "tbc-macro-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tbc_macro_db"
+database_id = "REPLACE_WITH_D1_ID"
+
+[vars]
+TURNSTILE_SECRET = "REPLACE_WITH_SECRET"

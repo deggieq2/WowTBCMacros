@@ -1,0 +1,65 @@
+[
+  {
+    "id": "super_mana_potion",
+    "itemId": 22832,
+    "name": "Super Mana Potion",
+    "type": "Potion",
+    "icon": "inv_potion_137"
+  },
+  {
+    "id": "super_healing_potion",
+    "itemId": 22829,
+    "name": "Super Healing Potion",
+    "type": "Potion",
+    "icon": "inv_potion_139"
+  },
+  {
+    "id": "flask_pure_death",
+    "itemId": 22866,
+    "name": "Flask of Pure Death",
+    "type": "Flask",
+    "icon": "inv_potion_136"
+  },
+  {
+    "id": "flask_relentless_assault",
+    "itemId": 22854,
+    "name": "Flask of Relentless Assault",
+    "type": "Flask",
+    "icon": "inv_potion_127"
+  },
+  {
+    "id": "elixir_major_mageblood",
+    "itemId": 22840,
+    "name": "Elixir of Major Mageblood",
+    "type": "Elixir",
+    "icon": "inv_potion_52"
+  },
+  {
+    "id": "blackened_basilisk",
+    "itemId": 27657,
+    "name": "Blackened Basilisk",
+    "type": "Food",
+    "icon": "inv_misc_food_65"
+  },
+  {
+    "id": "conjured_crystal_water",
+    "itemId": 8079,
+    "name": "Conjured Crystal Water",
+    "type": "Drink",
+    "icon": "inv_drink_18"
+  },
+  {
+    "id": "heavy_netherweave_bandage",
+    "itemId": 21991,
+    "name": "Heavy Netherweave Bandage",
+    "type": "Bandage",
+    "icon": "inv_misc_bandage_12"
+  },
+  {
+    "id": "scroll_spirit_v",
+    "itemId": 27501,
+    "name": "Scroll of Spirit V",
+    "type": "Scroll",
+    "icon": "inv_scroll_06"
+  }
+]
