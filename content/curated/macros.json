@@ -4,8 +4,40 @@
     "title": "Mage Counterspell Focus",
     "class": "Mage",
     "tags": ["pvp", "interrupt"],
-    "macro": "#showtooltip Counterspell\n/cast [target=focus,exists,nodead] Counterspell; Counterspell",
+    "macro": "#showtooltip Counterspell\n/stopcasting\n/cast [target=focus,exists,nodead,harm] Counterspell; Counterspell",
     "description": "Interrupt focus if available, otherwise your target."
+  },
+  {
+    "id": "priest-mouseover-heal",
+    "title": "Priest Mouseover Heal",
+    "class": "Priest",
+    "tags": ["healing", "mouseover"],
+    "macro": "#showtooltip Flash Heal\n/cast [target=mouseover,help,nodead][help,nodead][target=player] Flash Heal",
+    "description": "Heal mouseover, then target, then self."
+  },
+  {
+    "id": "druid-help-harm",
+    "title": "Druid Help/Harm",
+    "class": "Druid",
+    "tags": ["hybrid", "mouseover"],
+    "macro": "#showtooltip Rejuvenation\n/cast [target=mouseover,help,nodead][help,nodead][target=player] Rejuvenation; [target=mouseover,harm,nodead][harm,nodead] Moonfire",
+    "description": "Heals friendly mouseover or target, otherwise Moonfire enemies."
+  },
+  {
+    "id": "rogue-kick-focus",
+    "title": "Rogue Focus Kick",
+    "class": "Rogue",
+    "tags": ["interrupt", "focus"],
+    "macro": "#showtooltip Kick\n/stopcasting\n/cast [target=focus,exists,harm] Kick; Kick",
+    "description": "Kick focus if present, otherwise target."
+  },
+  {
+    "id": "shaman-stopcasting",
+    "title": "Shaman Stopcasting Shock",
+    "class": "Shaman",
+    "tags": ["interrupt", "pvp"],
+    "macro": "#showtooltip Earth Shock\n/stopcasting\n/cast [harm,nodead] Earth Shock",
+    "description": "Fast shock with stopcasting for interrupts."
   },
   {
     "id": "hunter-startattack",
@@ -14,5 +46,21 @@
     "tags": ["pve", "ranged"],
     "macro": "#showtooltip Steady Shot\n/startattack\n/cast Steady Shot",
     "description": "Guarantees Auto Shot starts while using Steady Shot."
+  },
+  {
+    "id": "hunter-petattack-mouseover",
+    "title": "Hunter Petattack Mouseover",
+    "class": "Hunter",
+    "tags": ["pet", "mouseover"],
+    "macro": "#showtooltip\n/petattack [target=mouseover,harm,nodead]\n/cast [harm] Serpent Sting",
+    "description": "Sends pet to mouseover if hostile while casting a sting."
+  },
+  {
+    "id": "warrior-startattack-sunder",
+    "title": "Warrior Startattack Sunder",
+    "class": "Warrior",
+    "tags": ["pve", "melee"],
+    "macro": "#showtooltip Sunder Armor\n/startattack\n/cast Sunder Armor",
+    "description": "Starts melee swings while applying Sunder Armor."
   }
 ]

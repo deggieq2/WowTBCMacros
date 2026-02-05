@@ -49,7 +49,13 @@ npm run data:wowhead
 The script reads `packages/data/data/wowhead-spell-urls.json` and writes
 `packages/data/data/spells.json`. If Wowhead blocks automated requests, you may
 need to run this locally or adjust the URLs. The format expects Wowhead listview
-pages with `new Listview({ template: 'spell', data: [...] })`.
+pages with `new Listview({ template: 'spell', data: [...] })` or `listviewitems`.
+
+You can also download the Wowhead pages manually and parse them locally:
+
+```bash
+WOWHEAD_HTML_DIR=/path/to/html npm run data:wowhead
+```
 
 Consumables are sourced from `packages/data/data/consumables.source.json` and compiled into
 `packages/data/data/consumables.json` with Wowhead item IDs so tooltips resolve.

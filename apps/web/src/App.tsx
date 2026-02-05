@@ -127,6 +127,34 @@ const HARM_KEYWORDS = [
   'serpent sting'
 ];
 
+const FAQS = [
+  {
+    question: 'How do I make a mouseover heal that falls back to target or self?',
+    answer:
+      'Use a single /cast with multiple condition blocks: [target=mouseover,help,nodead][help,nodead][target=player] YourHeal.'
+  },
+  {
+    question: 'Why does my macro always cast on myself?',
+    answer:
+      'A condition like [target=player] is always true, so it must be last in the chain or it will override the others.'
+  },
+  {
+    question: 'How do I mix heal and harm on one button?',
+    answer:
+      'Use a help/harm split: /cast [help] Heal; [harm] Damage. You can add mouseover blocks first.'
+  },
+  {
+    question: 'How do I interrupt focus without losing target?',
+    answer:
+      'Use a focus conditional: /cast [target=focus,exists,harm] Kick; Kick.'
+  },
+  {
+    question: 'How do I add modifiers for alternate spells?',
+    answer:
+      'Use mod conditions like [mod:shift] or [mod:alt] to override the default action.'
+  }
+];
+
 function inferSpellRole(name: string): 'help' | 'harm' | null {
   const lower = name.toLowerCase();
   if (HELP_KEYWORDS.some((key) => lower.includes(key))) return 'help';
@@ -163,11 +191,15 @@ export default function App() {
   const [druidHelper, setDruidHelper] = useState<'native' | 'dmh'>('native');
   const [experienceMode, setExperienceMode] = useState<'guided' | 'expert'>('expert');
   const [guidedType, setGuidedType] = useState<'help' | 'harm' | 'help-harm'>('help-harm');
+  const [guidedStep, setGuidedStep] = useState(1);
+  const [guidedPriority, setGuidedPriority] = useState<'heal' | 'harm'>('heal');
   const [guidedHelpSpell, setGuidedHelpSpell] = useState('');
   const [guidedHarmSpell, setGuidedHarmSpell] = useState('');
   const [guidedMouseover, setGuidedMouseover] = useState(true);
   const [guidedTargetFallback, setGuidedTargetFallback] = useState(true);
   const [guidedSelfFallback, setGuidedSelfFallback] = useState(true);
+  const [guidedUseExists, setGuidedUseExists] = useState(true);
+  const [guidedUseNodead, setGuidedUseNodead] = useState(true);
   const [guidedStopcasting, setGuidedStopcasting] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<Spell | null>(null);
   const [view, setView] = useState<'builder' | 'curated' | 'community'>('builder');
@@ -191,6 +223,12 @@ export default function App() {
   useEffect(() => {
     loadWowheadTooltips();
   }, []);
+
+  useEffect(() => {
+    if (experienceMode === 'guided') {
+      setGuidedStep(1);
+    }
+  }, [experienceMode]);
 
   useEffect(() => {
     document.body.dataset.theme = theme;
@@ -229,6 +267,46 @@ export default function App() {
   const rawMacro = buildMacro(macroDraft);
   const finalMacro = applyAtAlias(rawMacro, useAtAlias);
   const errors = validateMacro(macroDraft);
+  const suggestedRole = selectedSpell ? inferSpellRole(selectedSpell.name) : null;
+
+  const conditionSuggestions = [
+    {
+      id: 'mouseover-help',
+      label: 'Mouseover Help',
+      condition: { target: 'mouseover', help: true, nodead: true, exists: true },
+      description: 'Cast on friendly mouseover if alive.'
+    },
+    {
+      id: 'mouseover-harm',
+      label: 'Mouseover Harm',
+      condition: { target: 'mouseover', harm: true, nodead: true, exists: true },
+      description: 'Cast on enemy mouseover if alive.'
+    },
+    {
+      id: 'target-help',
+      label: 'Target Help',
+      condition: { help: true, nodead: true, exists: true },
+      description: 'Cast on friendly target.'
+    },
+    {
+      id: 'target-harm',
+      label: 'Target Harm',
+      condition: { harm: true, nodead: true, exists: true },
+      description: 'Cast on hostile target.'
+    },
+    {
+      id: 'self-cast',
+      label: 'Self Cast',
+      condition: { target: 'player' },
+      description: 'Force self-cast.'
+    },
+    {
+      id: 'focus-interrupt',
+      label: 'Focus Target',
+      condition: { target: 'focus', harm: true, exists: true, nodead: true },
+      description: 'Use focus for interrupts or CC.'
+    }
+  ];
 
   async function fetchCommunity() {
     setCommunityStatus('loading');
@@ -279,6 +357,10 @@ export default function App() {
         i === index ? { ...line, condition: { ...line.condition, ...patch } } : line
       )
     );
+  }
+
+  function setCondition(index: number, condition: Condition) {
+    setLines((prev) => prev.map((line, i) => (i === index ? { ...line, condition } : line)));
   }
 
   function addLine() {
@@ -413,6 +495,11 @@ export default function App() {
     const nextShow = showTooltip || spell.name;
     setShowTooltip(nextShow);
     updateLine(activeLineIndex, { argument: spell.name });
+    if (experienceMode === 'guided') {
+      const role = inferSpellRole(spell.name);
+      if (role === 'help') setGuidedHelpSpell(spell.name);
+      if (role === 'harm') setGuidedHarmSpell(spell.name);
+    }
   }
 
   function handleConsumableSelect(item: Consumable) {
@@ -428,36 +515,50 @@ export default function App() {
   function getGuidedMacro() {
     const helpSpell = guidedHelpSpell || 'Your Heal';
     const harmSpell = guidedHarmSpell || 'Your Damage';
-    const parts: string[] = [];
+    const addExists = guidedUseExists ? ['exists'] : [];
+    const addNodead = guidedUseNodead ? ['nodead'] : [];
 
+    const buildSet = (tokens: string[]) => tokens.filter(Boolean);
+
+    const helpSets: string[][] = [];
     if (guidedType === 'help' || guidedType === 'help-harm') {
       if (guidedMouseover) {
-        parts.push(`[target=mouseover,help,nodead] ${helpSpell}`);
-      }
-      if (guidedType === 'help-harm' && guidedMouseover) {
-        parts.push(`[target=mouseover,harm,nodead] ${harmSpell}`);
-      }
-    }
-
-    if (guidedType === 'harm' || guidedType === 'help-harm') {
-      if (guidedType !== 'help-harm' && guidedMouseover) {
-        parts.push(`[target=mouseover,harm,nodead] ${harmSpell}`);
+        helpSets.push(buildSet(['target=mouseover', 'help', ...addExists, ...addNodead]));
       }
       if (guidedTargetFallback) {
-        parts.push(`[harm,nodead] ${harmSpell}`);
-      }
-    }
-
-    if (guidedType === 'help' || guidedType === 'help-harm') {
-      if (guidedTargetFallback) {
-        parts.push(`[help,nodead] ${helpSpell}`);
+        helpSets.push(buildSet(['help', ...addExists, ...addNodead]));
       }
       if (guidedSelfFallback) {
-        parts.push(`[target=player] ${helpSpell}`);
+        helpSets.push(buildSet(['target=player']));
       }
     }
 
-    return parts.join('; ');
+    const harmSets: string[][] = [];
+    if (guidedType === 'harm' || guidedType === 'help-harm') {
+      if (guidedMouseover) {
+        harmSets.push(buildSet(['target=mouseover', 'harm', ...addExists, ...addNodead]));
+      }
+      if (guidedTargetFallback) {
+        harmSets.push(buildSet(['harm', ...addExists, ...addNodead]));
+      }
+    }
+
+    const buildAction = (spell: string, sets: string[][]) => {
+      if (!sets.length) return spell;
+      const conds = sets.map((set) => `[${set.join(',')}]`).join('');
+      return `${conds} ${spell}`.trim();
+    };
+
+    const helpAction = buildAction(helpSpell, helpSets);
+    const harmAction = buildAction(harmSpell, harmSets);
+
+    if (guidedType === 'help') return helpAction;
+    if (guidedType === 'harm') return harmAction;
+
+    if (guidedPriority === 'heal') {
+      return `${helpAction}; ${harmAction}`.trim();
+    }
+    return `${harmAction}; ${helpAction}`.trim();
   }
 
   function applyGuidedMacro() {
@@ -471,19 +572,41 @@ export default function App() {
     setActiveLineIndex(guidedStopcasting ? 1 : 0);
     if (guidedType === 'harm') {
       setShowTooltip(guidedHarmSpell);
-    } else {
-      setShowTooltip(guidedHelpSpell);
+      return;
     }
+    if (guidedType === 'help') {
+      setShowTooltip(guidedHelpSpell);
+      return;
+    }
+    setShowTooltip(guidedPriority === 'heal' ? guidedHelpSpell : guidedHarmSpell);
   }
 
   function applySuggestedCondition() {
     if (!selectedSpell) return;
     const role = inferSpellRole(selectedSpell.name);
     if (!role) return;
-    updateCondition(activeLineIndex, {
+    setCondition(activeLineIndex, {
       help: role === 'help',
-      harm: role === 'harm'
+      harm: role === 'harm',
+      nodead: true,
+      exists: true
     });
+  }
+
+  const guidedMaxStep = 4;
+  const guidedNeedsHelp = guidedType !== 'harm';
+  const guidedNeedsHarm = guidedType !== 'help';
+  const guidedStepReady =
+    guidedStep !== 2 ||
+    ((guidedNeedsHelp ? guidedHelpSpell : true) && (guidedNeedsHarm ? guidedHarmSpell : true));
+
+  function nextGuidedStep() {
+    if (!guidedStepReady) return;
+    setGuidedStep((prev) => Math.min(prev + 1, guidedMaxStep));
+  }
+
+  function prevGuidedStep() {
+    setGuidedStep((prev) => Math.max(prev - 1, 1));
   }
 
   return (
@@ -830,84 +953,195 @@ export default function App() {
             <button className="ghost" onClick={addLine}>
               Add line
             </button>
+
+            <div className="suggestions">
+              <h3>Smart Condition Suggestions</h3>
+              <div className="suggestion-list">
+                {conditionSuggestions.map((suggestion) => {
+                  const matchesRole =
+                    (suggestedRole === 'help' && suggestion.condition.help) ||
+                    (suggestedRole === 'harm' && suggestion.condition.harm);
+                  return (
+                    <button
+                      key={suggestion.id}
+                      className={`suggestion ${matchesRole ? 'highlight' : ''}`}
+                      onClick={() => setCondition(activeLineIndex, suggestion.condition)}
+                    >
+                      <strong>{suggestion.label}</strong>
+                      <span className="muted">{suggestion.description}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedSpell && suggestedRole && (
+                <p className="muted">
+                  Suggested for <strong>{selectedSpell.name}</strong>: {suggestedRole} targets.
+                </p>
+              )}
+            </div>
           </section>
 
           {experienceMode === 'guided' && (
             <section className="panel">
               <h2>Guided Builder</h2>
               <p className="muted">
-                Choose a macro style and spells. We will generate a safe mouseover/target/self
-                fallback macro you can apply to the editor.
+                Step-by-step helper for mouseover macros. We will build a safe priority chain
+                (mouseover → target → self) and apply it to your editor.
               </p>
-              <div className="field">
-                <label>Macro type</label>
-                <select value={guidedType} onChange={(e) => setGuidedType(e.target.value as typeof guidedType)}>
-                  <option value="help">Mouseover Heal</option>
-                  <option value="harm">Mouseover Harm</option>
-                  <option value="help-harm">Help/Harm (mouseover + fallback)</option>
-                </select>
+              <div className="stepper">Step {guidedStep} of {guidedMaxStep}</div>
+
+              {guidedStep === 1 && (
+                <>
+                  <div className="field">
+                    <label>Macro type</label>
+                    <select
+                      value={guidedType}
+                      onChange={(e) => setGuidedType(e.target.value as typeof guidedType)}
+                    >
+                      <option value="help">Mouseover Heal</option>
+                      <option value="harm">Mouseover Harm</option>
+                      <option value="help-harm">Help/Harm (mouseover + fallback)</option>
+                    </select>
+                  </div>
+                  {guidedType === 'help-harm' && (
+                    <div className="field">
+                      <label>Priority when both are possible</label>
+                      <select
+                        value={guidedPriority}
+                        onChange={(e) => setGuidedPriority(e.target.value as typeof guidedPriority)}
+                      >
+                        <option value="heal">Heal first (common for healers)</option>
+                        <option value="harm">Damage first (common for DPS)</option>
+                      </select>
+                    </div>
+                  )}
+                  <p className="muted">
+                    Most players want mouseover to win, then target, then self for heals.
+                  </p>
+                </>
+              )}
+
+              {guidedStep === 2 && (
+                <>
+                  {guidedNeedsHelp && (
+                    <div className="field">
+                      <label>Help spell</label>
+                      <select
+                        value={guidedHelpSpell}
+                        onChange={(e) => setGuidedHelpSpell(e.target.value)}
+                      >
+                        <option value="">(select)</option>
+                        {spellList.map((spell) => (
+                          <option key={spell.id} value={spell.name}>
+                            {spell.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {guidedNeedsHarm && (
+                    <div className="field">
+                      <label>Harm spell</label>
+                      <select
+                        value={guidedHarmSpell}
+                        onChange={(e) => setGuidedHarmSpell(e.target.value)}
+                      >
+                        <option value="">(select)</option>
+                        {spellList.map((spell) => (
+                          <option key={spell.id} value={spell.name}>
+                            {spell.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {!guidedStepReady && (
+                    <p className="muted">Pick the required spell(s) to continue.</p>
+                  )}
+                </>
+              )}
+
+              {guidedStep === 3 && (
+                <>
+                  <div className="checkboxes">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedMouseover}
+                        onChange={(e) => setGuidedMouseover(e.target.checked)}
+                      />
+                      Use mouseover first
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedTargetFallback}
+                        onChange={(e) => setGuidedTargetFallback(e.target.checked)}
+                      />
+                      Fallback to target
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedSelfFallback}
+                        onChange={(e) => setGuidedSelfFallback(e.target.checked)}
+                        disabled={!guidedNeedsHelp}
+                      />
+                      Fallback to self (heals)
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedUseExists}
+                        onChange={(e) => setGuidedUseExists(e.target.checked)}
+                      />
+                      Require target exists
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedUseNodead}
+                        onChange={(e) => setGuidedUseNodead(e.target.checked)}
+                      />
+                      Require target alive
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={guidedStopcasting}
+                        onChange={(e) => setGuidedStopcasting(e.target.checked)}
+                      />
+                      Add /stopcasting
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {guidedStep === 4 && (
+                <>
+                  <div className="field">
+                    <label>Generated /cast line</label>
+                    <textarea readOnly value={`/cast ${getGuidedMacro()}`} rows={5} />
+                  </div>
+                  <p className="muted">
+                    Order matters: the first matching condition wins. Keep self-cast last so it
+                    doesn't override help/harm targets.
+                  </p>
+                </>
+              )}
+
+              <div className="step-actions">
+                <button className="ghost" onClick={prevGuidedStep} disabled={guidedStep === 1}>
+                  Back
+                </button>
+                {guidedStep < guidedMaxStep ? (
+                  <button onClick={nextGuidedStep} disabled={!guidedStepReady}>
+                    Next
+                  </button>
+                ) : (
+                  <button onClick={applyGuidedMacro}>Apply to editor</button>
+                )}
               </div>
-              <div className="field">
-                <label>Help spell</label>
-                <select value={guidedHelpSpell} onChange={(e) => setGuidedHelpSpell(e.target.value)}>
-                  <option value="">(select)</option>
-                  {spellList.map((spell) => (
-                    <option key={spell.id} value={spell.name}>
-                      {spell.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label>Harm spell</label>
-                <select value={guidedHarmSpell} onChange={(e) => setGuidedHarmSpell(e.target.value)}>
-                  <option value="">(select)</option>
-                  {spellList.map((spell) => (
-                    <option key={spell.id} value={spell.name}>
-                      {spell.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="checkboxes">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={guidedMouseover}
-                    onChange={(e) => setGuidedMouseover(e.target.checked)}
-                  />
-                  Use mouseover first
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={guidedTargetFallback}
-                    onChange={(e) => setGuidedTargetFallback(e.target.checked)}
-                  />
-                  Fallback to target
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={guidedSelfFallback}
-                    onChange={(e) => setGuidedSelfFallback(e.target.checked)}
-                  />
-                  Fallback to self (heals)
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={guidedStopcasting}
-                    onChange={(e) => setGuidedStopcasting(e.target.checked)}
-                  />
-                  Add /stopcasting
-                </label>
-              </div>
-              <div className="field">
-                <label>Generated /cast line</label>
-                <textarea readOnly value={`/cast ${getGuidedMacro()}`} rows={4} />
-              </div>
-              <button onClick={applyGuidedMacro}>Apply to editor</button>
             </section>
           )}
 
@@ -943,11 +1177,23 @@ export default function App() {
               <li><strong>target=player</strong>: Force self-cast.</li>
               <li><strong>nodead</strong>: Skip dead targets.</li>
               <li><strong>exists</strong>: Only if the target exists.</li>
+              <li><strong>Tip</strong>: help/harm already imply exists.</li>
               <li><strong>mod:shift/ctrl/alt</strong>: Change behavior with modifier keys.</li>
             </ul>
             <p className="muted">
               Tip: A common heal macro pattern is mouseover → target → self. For harm spells, mouseover → target.
             </p>
+          </section>
+          <section className="panel">
+            <h2>Macro FAQ</h2>
+            <ul className="cheatsheet">
+              {FAQS.map((item) => (
+                <li key={item.question}>
+                  <strong>{item.question}</strong>
+                  <div className="muted">{item.answer}</div>
+                </li>
+              ))}
+            </ul>
           </section>
         </main>
       )}

@@ -189,6 +189,47 @@ button.ghost {
   padding-right: 4px;
 }
 
+.stepper {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.step-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.suggestions {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.suggestion-list {
+  display: grid;
+  gap: 8px;
+}
+
+.suggestion {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.suggestion.highlight {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(192, 98, 42, 0.3);
+}
+
 .hint {
   margin-top: 12px;
   padding: 10px;

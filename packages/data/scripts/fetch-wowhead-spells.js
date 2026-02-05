@@ -5,6 +5,7 @@ import vm from 'node:vm';
 const dataRoot = path.resolve(process.cwd(), 'packages/data/data');
 const configPath = path.join(dataRoot, 'wowhead-spell-urls.json');
 const outputPath = path.join(dataRoot, 'spells.json');
+const localDir = process.env.WOWHEAD_HTML_DIR || '';
 
 if (!fs.existsSync(configPath)) {
   throw new Error(`Missing ${configPath}`);
@@ -30,6 +31,15 @@ function extractListviewData(html) {
       continue;
     }
   }
+  const listviewItemsMatch = html.match(/listviewitems\s*=\s*(\[[\s\S]*?\]);/);
+  if (listviewItemsMatch) {
+    try {
+      const result = vm.runInNewContext(listviewItemsMatch[1], {}, { timeout: 1000 });
+      if (Array.isArray(result)) return result;
+    } catch (error) {
+      // ignore
+    }
+  }
   return [];
 }
 
@@ -46,12 +56,23 @@ async function fetchHtml(url) {
 const combined = new Map();
 
 for (const entry of config) {
-  const { url, class: className, isPet, petType } = entry;
+  const { url, file, class: className, isPet, petType } = entry;
   if (!url || !className) {
     continue;
   }
-  console.log(`Fetching ${className} from ${url}`);
-  const html = await fetchHtml(url);
+  let html = '';
+  if (file) {
+    html = fs.readFileSync(path.resolve(dataRoot, file), 'utf8');
+  } else if (localDir) {
+    const localPath = path.join(localDir, `${className}.html`);
+    if (fs.existsSync(localPath)) {
+      html = fs.readFileSync(localPath, 'utf8');
+    }
+  }
+  if (!html) {
+    console.log(`Fetching ${className} from ${url}`);
+    html = await fetchHtml(url);
+  }
   const list = extractListviewData(html);
   for (const item of list) {
     if (!item.id || !item.name) continue;
